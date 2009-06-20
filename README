@@ -1,0 +1,15 @@
+
+
+README
+
+This module, Lingua::EN::Bigram, is designed to: 1) pull out all of the
+two-word phrases (collocations or "bigrams") in a given text, and 2)
+list these phrases according to thier frequency and/or T-Score. The
+T-Score is calculated as per Nugues, P. M. (2006). An introduction to
+language processing with Perl and Prolog: An outline of theories,
+implementation, and application with special consideration of English,
+French, and German. Cognitive technologies. Berlin: Springer. Page 109.
+
+-- 
+Eric Lease Morgan <eric_morgan@infomotions.com>
+June 19, 2009
