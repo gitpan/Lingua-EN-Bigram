@@ -1,7 +1,7 @@
-use Test::More tests => 13;
+use Test::More tests => 21;
 use strict;
 
-# Bigram.t - regression texts for Lingua::EN::Bigram
+# ngram.t - regression texts for Lingua::EN::Bigram
 
 # Eric Lease Morgan <eric_morgan@infomotions.com>
 # June 18, 2009 - first cut
@@ -12,40 +12,60 @@ use strict;
 use_ok( 'Lingua::EN::Bigram' );
 
 # constructor
-my $bigrams = Lingua::EN::Bigram->new;
-isa_ok( $bigrams, 'Lingua::EN::Bigram' );
+my $ngrams = Lingua::EN::Bigram->new;
+isa_ok( $ngrams, 'Lingua::EN::Bigram' );
 
 # slurp up test data
 my $text = do { local $/; <DATA> };
 
 # set/get text
-$bigrams->text( $text );
-like( $bigrams->text, qr/^                                     350 BC/, 'set/get text' );
+$ngrams->text( $text );
+like( $ngrams->text, qr/^                                     350 BC/, 'set/get text' );
 
-# words
-my @words = $bigrams->words;
+# individual words
+my @words = $ngrams->words;
 is( scalar( @words ), 10887, 'words in an array of 10887 items' );
 is( $words[ 1 ], 'bc', 'element number 1 of words is "bc"' );
 
-# word_count
-my $word_count = $bigrams->word_count;
+# individual word count
+my $word_count = $ngrams->word_count;
 is( ref( $word_count ), 'HASH', 'word_count is a hash' );
 is( $$word_count{ 'something' }, 15, '"something" occurs 15 times' );
 
-# bigrams
-my @bigrams = $bigrams->bigrams;
+# bi-grams
+my @bigrams = $ngrams->bigrams;
 is( scalar( @bigrams ), 10886, 'bigrams is an array of 10886 items' );
 is( $bigrams[ 1 ], 'bc metaphysics', 'element number 1 of bigrams is "bc metaphysics"' );
 
-# bigram_count
-my $bigram_count = $bigrams->bigram_count;
+# bi-gram_count
+my $bigram_count = $ngrams->bigram_count;
 is( ref( $bigram_count ), 'HASH', 'bigram_count is a hash' );
 is ( $$bigram_count{ 'something else' }, 3, '"something else" occurs 3 times' );
 
 # tscore
-my $tscore = $bigrams->tscore;
+my $tscore = $ngrams->tscore;
 is( ref( $tscore ), 'HASH', 'tscore is a hash' );
 is( $$tscore{ 'something else' }, 1.72489160059353, '"something else: has a tscore of 1.72489160059353' );
+
+# trigrams
+my @trigrams = $ngrams->trigrams;
+is( scalar( @trigrams ), 10886, 'trigrams is an array of 10886 items' );
+is( $trigrams[ 1 ], 'bc metaphysics by', 'element number 1 of bigrams is "bc metaphysics by"' );
+
+# trigram_count
+my $trigram_count = $ngrams->trigram_count;
+is( ref( $trigram_count ), 'HASH', 'trigram_count is a hash' );
+is ( $$trigram_count{ 'bc metaphysics by' }, 1, '"bc metaphysics by" occurs 1 time' );
+
+# quadgrams
+my @quadgrams = $ngrams->quadgrams;
+is( scalar( @quadgrams ), 10886, 'quadgrams is an array of 10886 items' );
+is( $quadgrams[ 1 ], 'bc metaphysics by aristotle', 'element number 1 of bigrams is "bc metaphysics by aristotle"' );
+
+# quadgram_count
+my $quadgram_count = $ngrams->quadgram_count;
+is( ref( $quadgram_count ), 'HASH', 'trigram_count is a hash' );
+is ( $$quadgram_count{ 'bc metaphysics by aristotle' }, 1, '"bc metaphysics by aristotle" occurs 1 time' );
 
 # done, whew!
 exit;

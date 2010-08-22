@@ -2,17 +2,20 @@
 
 INSTALL
 
-Installing this module should be trivial since it requires no
-dependencies:
+Installing this module (Lingua::EN::Bigram) should be trivial since it
+requires no dependencies:
 
   $ perl Makefile.PL
   $ make
   $ make test
   $ make install
 
-Once installed, or even before, you should be able to run
-bin/bigrams.pl to see how it works.
+Once installed (or even before) you should be able to see how it works
+by:
+
+  $ cd bin
+  $ ./n-grams.pl ../etc/walden.txt
 
 -- 
 Eric Lease Morgan <eric_morgan@infomotions.com>
-June 19, 2009
+August 22, 2010

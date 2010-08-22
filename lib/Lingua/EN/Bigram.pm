@@ -1,17 +1,19 @@
 package Lingua::EN::Bigram;
 
-# Bigram.pm - Calculate significant two-word phrases based on frequency and/or T-Score
+# Bigram.pm - Calculate two-, three-, and four-word phrases based on frequency and/or T-Score
 
 # Eric Lease Morgan <eric_morgan@infomotions.com>
-# June 18, 2009 - first investigations
-# June 19, 2009 - "finished" POD
+# June   18, 2009 - first investigations
+# June   19, 2009 - "finished" POD
+# August 22, 2010 - added trigrams and quadgrams; can I say "n-grams"?
 
 
 # include
 use strict;
+use warnings;
 
 # define
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 sub new {
@@ -144,19 +146,95 @@ sub tscore {
 }
 
 
+sub trigrams {
+	
+	# get input
+	my ( $self ) = shift;
+
+	# initialize
+	my @words    = $self->words;
+	my @trigrams = ();
+	
+	# do the work
+	no warnings; 
+	for ( my $i = 0; $i < $#words; $i++ ) { $trigrams[ $i ] = $words[ $i ] . ' ' . $words[ $i + 1 ] . ' ' . $words[ $i + 2 ] }
+	
+	# done
+	return @trigrams;
+
+}
+
+
+sub trigram_count {
+
+	# get input
+	my ( $self ) = shift;
+
+	# initialize
+	my @words         = $self->words;
+	my @trigrams      = $self->trigrams;
+	my %trigram_count = ();
+	
+	# do the work
+	for ( my $i = 0; $i < $#words; $i++ ) { $trigram_count{ $trigrams[ $i ] }++ }
+	
+	# done
+	return \%trigram_count;
+
+}
+
+
+sub quadgrams {
+	
+	# get input
+	my ( $self ) = shift;
+
+	# initialize
+	my @words     = $self->words;
+	my @quadgrams = ();
+	
+	# do the work
+	no warnings; 
+	for ( my $i = 0; $i < $#words; $i++ ) { $quadgrams[ $i ] = $words[ $i ] . ' ' . $words[ $i + 1 ] . ' ' . $words[ $i + 2 ] . ' ' . $words[ $i + 3 ] }
+	
+	# done
+	return @quadgrams;
+
+}
+
+
+sub quadgram_count {
+
+	# get input
+	my ( $self ) = shift;
+
+	# initialize
+	my @words          = $self->words;
+	my @quadgrams      = $self->quadgrams;
+	my %quadgram_count = ();
+	
+	# do the work
+	for ( my $i = 0; $i < $#words; $i++ ) { $quadgram_count{ $quadgrams[ $i ] }++ }
+	
+	# done
+	return \%quadgram_count;
+
+}
+
+
 
 
 =head1 NAME
 
-Lingua::EN::Bigram - Calculate significant two-word phrases based on frequency and/or T-Score
+Lingua::EN::Bigram - Calculate two-, three-, and four-word phrases based on frequency and/or T-Score
 
 
 =head1 SYNOPSIS
 
   use Lingua::EN::Bigram;
-  $bigram = Lingua::EN::Bigram->new;
-  $bigram->text( 'All men by nature desire to know. An indication of this...' );
-  $tscore = $bigram->tscore;
+  $ngram = Lingua::EN::Bigram->new;
+  $ngram->text( 'All men by nature desire to know. An indication of this...' );
+  $tscore = $ngram->tscore;
   foreach ( sort { $$tscore{ $b } <=> $$tscore{ $a } } keys %$tscore ) {
 
 	  print "$$tscore{ $_ }\t" . "$_\n";
@@ -166,7 +244,7 @@ Lingua::EN::Bigram - Calculate significant two-word phrases based on frequency a
 
 =head1 DESCRIPTION
 
-This module is designed to: 1) pull out all of the two-word phrases (collocations or "bigrams") in a given text, and 2) list these phrases according to thier frequency and/or T-Score. Using this module is it possible to create list of the most common two-word phrases in a text as well as order them by their probable occurance, thus implying significance.
+This module is designed to: 1) pull out all of the two-, three-, and four-word phrases in a given text, and 2) list these phrases according to their frequency. Using this module is it possible to create lists of the most common phrases in a text as well as order them by their probable occurance, thus implying significance. This process is useful for the purposes of textual analysis and "distant reading".
 
 
 =head1 METHODS
@@ -174,21 +252,21 @@ This module is designed to: 1) pull out all of the two-word phrases (collocation
 
 =head2 new
 
-Create a new, empty bigram object:
+Create a new, empty Lingua::EN::Bigram object:
 
   # initalize
-  $bigram = Lingua::EN::Bigram->new;
+  $ngram = Lingua::EN::Bigram->new;
 
 
 =head2 text
 
 Set or get the text to be analyzed:
 
-  # set the attribute
-  $bigram->text( 'All good things must come to an end...' );
+  # fill Lingua::EN::Bigram object with content 
+  $ngram->text( 'All good things must come to an end...' );
 
-  # get the attribute
-  $text = $bigram->text;
+  # get the Lingua::EN::Bigram object's content 
+  $text = $ngram->text;
 
 
 =head2 words
@@ -196,7 +274,7 @@ Set or get the text to be analyzed:
 Return a list of all the tokens in a text. Each token will be a word or puncutation mark:
 
   # get words
-  @words = $bigram->words;
+  @words = $ngram->words;
 
 
 =head2 word_count
@@ -204,7 +282,7 @@ Return a list of all the tokens in a text. Each token will be a word or puncutat
 Return a reference to a hash whose keys are a token and whose values are the number of times the token occurs in the text:
 
   # get word count
-  $word_count = $bigram->word_count;
+  $word_count = $ngram->word_count;
 
   # list the words according to frequency
   foreach ( sort { $$word_count{ $b } <=> $$word_count{ $a } } keys %$word_count ) {
@@ -219,7 +297,7 @@ Return a reference to a hash whose keys are a token and whose values are the num
 Return a list of all bigrams in the text. Each item will be a pair of tokens and the tokens may consist of words or puncutation marks:
 
   # get bigrams
-  @bigrams = $bigram->bigrams;
+  @bigrams = $ngram->bigrams;
 
 
 =head2 bigram_count
@@ -227,7 +305,7 @@ Return a list of all bigrams in the text. Each item will be a pair of tokens and
 Return a reference to a hash whose keys are a bigram and whose values are the frequency of the bigram in the text:
 
   # get bigram count
-  $bigram_count = $bigram->bigram_count;
+  $bigram_count = $ngram->bigram_count;
 
   # list the bigrams according to frequency
   foreach ( sort { $$bigram_count{ $b } <=> $$bigram_count{ $a } } keys %$bigram_count ) {
@@ -239,15 +317,61 @@ Return a reference to a hash whose keys are a bigram and whose values are the fr
 
 =head2 tscore
 
-Return a reference to a hash whose keys are a bigram and whose values are a T-Score -- a probabalistic calculation determining the significance of bigram occuring in the text:
+Return a reference to a hash whose keys are a bigram and whose values are a T-Score -- a probabalistic calculation determining the significance of the bigram occuring in the text:
 
   # get t-score
-  $tscore = $bigram->tscore;
+  $tscore = $ngram->tscore;
 
   # list bigrams according to t-score
   foreach ( sort { $$tscore{ $b } <=> $$tscore{ $a } } keys %$tscore ) {
 
 	  print "$$tscore{ $_ }\t" . "$_\n";
+
+  }
+
+
+=head2 trigrams
+
+Return a list of all trigrams (three-word phrases) in the text. Each item will include three tokens and the tokens may consist of words or puncutation marks:
+
+  # get trigrams
+  @trigrams = $ngram->trigrams;
+
+
+=head2 trigram_count
+
+Return a reference to a hash whose keys are a trigram and whose values are the frequency of the trigram in the text:
+
+  # get trigram count
+  $trigram_count = $ngram->trigram_count;
+
+  # list the trigrams according to frequency
+  foreach ( sort { $$trigram_count{ $b } <=> $$trigram_count{ $a } } keys %$trigram_count ) {
+
+    print $$trigram_count{ $_ }, "\t$_\n";
+
+  }
+
+
+=head2 quadgrams
+
+Return a list of all quadgrams (four-word phrases) in the text. Each item will include four tokens and the tokens may consist of words or puncutation marks:
+
+  # get quadgrams
+  @quadgrams = $ngram->quadgrams;
+
+
+=head2 quadgram_count
+
+Return a reference to a hash whose keys are a quadgram and whose values are the frequency of the quadgram in the text:
+
+  # get quadgram count
+  $quadgram_count = $ngram->quadgram_count;
+
+  # list the trigrams according to frequency
+  foreach ( sort { $$quadgram_count{ $b } <=> $$quadgram_count{ $a } } keys %$quadgram_count ) {
+
+    print $$quadgram_count{ $_ }, "\t$_\n";
 
   }
 
@@ -258,7 +382,7 @@ Given the increasing availability of full text materials, this module is intende
 
 Consider using T-Score-weighted bigrams as classification terms to supplement the "aboutness" of texts. Concatonate many texts together and look for common phrases written by the author. Compare these commonly used phrases to the commonly used phrases of other authors.
 
-Each bigram includes punctuation. This is intentional. Developers may need want to remove bigrams containing such values from the output. Similarly, no effort has been made to remove commonly used words -- stop words -- from the methods. Consider the use of Lingua::StopWords, Lingua::EN::StopWords, or the creation of your own stop word list to make output more meaningful. The distribution came with a script (bin/bigrams.pl) demonstrating how to remove puncutation and stop words from the displayed output.
+Each bigram, trigram, or quadgram includes punctuation. This is intentional. Developers may need want to remove bigrams, trigrams, or quadgrams containing such values from the output. Similarly, no effort has been made to remove commonly used words -- stop words -- from the methods. Consider the use of Lingua::StopWords, Lingua::EN::StopWords, or the creation of your own stop word list to make output more meaningful. The distribution came with a script (bin/n-grams.pl) demonstrating how to remove puncutation and stop words from the displayed output.
 
 Finally, this is not the only module supporting bigram extraction. See also Text::NSP which supports n-gram extraction.
 
@@ -282,9 +406,19 @@ There are probably a number of ways the module can be improved:
 =back
 
 
+=head1 CHANGES
+
+=over
+
+* August 22, 2010 - added trigrams and quadgrams; tweaked documentation; removed bigrams.pl from  the distribution and substituted it wih n-grams.pl
+
+* June 19, 2009 - initial release
+
+=back
+
 =head1 ACKNOWLEDGEMENTS
 
-T-Score is calculated as per Nugues, P. M. (2006). An introduction to language processing with Perl and Prolog: An outline of theories, implementation, and application with special consideration of English, French, and German. Cognitive technologies. Berlin: Springer. Page 109.
+T-Score, as well as a number of the module's methods, is calculated as per Nugues, P. M. (2006). An introduction to language processing with Perl and Prolog: An outline of theories, implementation, and application with special consideration of English, French, and German. Cognitive technologies. Berlin: Springer.
 
 
 =head1 AUTHOR
