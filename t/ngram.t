@@ -1,11 +1,13 @@
-use Test::More tests => 21;
 use strict;
+use Test::Exception;
+use Test::More tests => 28;
 
 # ngram.t - regression texts for Lingua::EN::Bigram
 
 # Eric Lease Morgan <eric_morgan@infomotions.com>
-# June 18, 2009 - first cut
-# June 19, 2009 - made more complete
+# June   18, 2009 - first cut
+# June   19, 2009 - made more complete
+# August 23, 2010 - updated for versions 0.02 and 0.03; included Test::Exception
 
 
 # use 
@@ -64,8 +66,23 @@ is( $quadgrams[ 1 ], 'bc metaphysics by aristotle', 'element number 1 of bigrams
 
 # quadgram_count
 my $quadgram_count = $ngrams->quadgram_count;
-is( ref( $quadgram_count ), 'HASH', 'trigram_count is a hash' );
+is( ref( $quadgram_count ), 'HASH', 'quadgram_count is a hash' );
 is ( $$quadgram_count{ 'bc metaphysics by aristotle' }, 1, '"bc metaphysics by aristotle" occurs 1 time' );
+
+# ngram
+my @ngrams = $ngrams->ngram( 4 );
+is( scalar( @quadgrams ), 10886, 'quadgrams is an array of 10886 items' );
+is( $quadgrams[ 1 ], 'bc metaphysics by aristotle', 'element number 1 of bigrams is "bc metaphysics by aristotle"' );
+
+# ngram_count
+my $ngram_count = $ngrams->ngram_count( \@ngrams );
+is( ref( $quadgram_count ), 'HASH', 'ngram_count is a hash' );
+is ( $$quadgram_count{ 'bc metaphysics by aristotle' }, 1, '"bc metaphysics by aristotle" occurs 1 time' );
+
+# ngram & ngram_count sanity checks
+dies_ok { $ngrams->ngram } 'trapped not passing an argument to ngram';
+dies_ok { $ngrams->ngram( 5.5 ) } 'trapped need to pass an integer to ngram';
+dies_ok { $ngrams->ngram_count( 'foo' )} 'trapped need to pass ngram_count an array reference';
 
 # done, whew!
 exit;

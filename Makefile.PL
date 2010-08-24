@@ -3,7 +3,7 @@ use ExtUtils::MakeMaker;
 
 &WriteMakefile(
 
-	ABSTRACT	 => 'Calculate two-, three-, and four-word phrases based on frequency and/or T-Score',
+	ABSTRACT	 => 'Calculate n-word phrases (bigrams, trigrams, etc.) based on frequency and/or T-Score',
 	AUTHOR		 => 'Eric Lease Morgan',
 	clean        => { FILES => 'Lingua-EN-Bigram-* MANIFEST.bak' },
 	depend		 => { Makefile => '$(VERSION_FROM)' },

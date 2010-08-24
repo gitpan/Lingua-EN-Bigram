@@ -1,4 +1,4 @@
-bin/n-grams.pl
+bin/ngrams.pl
 etc/walden.txt
 INSTALL
 lib/Lingua/EN/Bigram.pm

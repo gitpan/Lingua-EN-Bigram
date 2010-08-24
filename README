@@ -2,12 +2,12 @@
 
 README
 
-This module is designed to: 1) pull out all of the two-, three-, and
-four-word phrases in a given text, and 2) list these phrases according
-to their frequency. Using this module is it possible to create lists of
-the most common phrases in a text as well as order them by their
-probable occurance, thus implying significance. This process is useful
-for the purposes of textual analysis and "distant reading".
+This module is designed to: 1) pull out all of the ngrams (multi-word
+phrases) in a given text, and 2) list these phrases according to their
+frequency. Using this module is it possible to create lists of the most
+common phrases in a text as well as order them by their probable
+occurance, thus implying significance. This process is useful for the
+purposes of textual analysis and "distant reading".
 
 The two-word phrases (bi-grams) are also listable by their T-Score. The
 T-Score, as well as a number of the module's other methods, is
@@ -18,4 +18,4 @@ German. Cognitive technologies. Berlin: Springer.
 
 -- 
 Eric Lease Morgan <eric_morgan@infomotions.com>
-August 22, 2010
+August 23, 2010

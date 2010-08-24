@@ -1,11 +1,12 @@
 package Lingua::EN::Bigram;
 
-# Bigram.pm - Calculate two-, three-, and four-word phrases based on frequency and/or T-Score
+# Bigram.pm - Extract n-grams from a text and list them according to frequency and/or T-Score
 
 # Eric Lease Morgan <eric_morgan@infomotions.com>
 # June   18, 2009 - first investigations
 # June   19, 2009 - "finished" POD
 # August 22, 2010 - added trigrams and quadgrams; can I say "n-grams"?
+# August 23, 2010 - yes, I can say n-gram
 
 
 # include
@@ -13,7 +14,7 @@ use strict;
 use warnings;
 
 # define
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 sub new {
@@ -83,16 +84,9 @@ sub bigrams {
 
 	# get input
 	my ( $self ) = shift;
-
-	# initialize
-	my @words   = $self->words;
-	my @bigrams = ();
-	
-	# do the work
-	for ( my $i = 0; $i < $#words; $i++ ) { $bigrams[ $i ] = $words[ $i ] . ' ' . $words[ $i + 1 ] }
 	
 	# done
-	return @bigrams;
+	return $self->ngram( 2 );
 
 }
 
@@ -151,16 +145,8 @@ sub trigrams {
 	# get input
 	my ( $self ) = shift;
 
-	# initialize
-	my @words    = $self->words;
-	my @trigrams = ();
-	
-	# do the work
-	no warnings; 
-	for ( my $i = 0; $i < $#words; $i++ ) { $trigrams[ $i ] = $words[ $i ] . ' ' . $words[ $i + 1 ] . ' ' . $words[ $i + 2 ] }
-	
 	# done
-	return @trigrams;
+	return $self->ngram( 3 );
 
 }
 
@@ -189,16 +175,8 @@ sub quadgrams {
 	# get input
 	my ( $self ) = shift;
 
-	# initialize
-	my @words     = $self->words;
-	my @quadgrams = ();
-	
-	# do the work
-	no warnings; 
-	for ( my $i = 0; $i < $#words; $i++ ) { $quadgrams[ $i ] = $words[ $i ] . ' ' . $words[ $i + 1 ] . ' ' . $words[ $i + 2 ] . ' ' . $words[ $i + 3 ] }
-	
 	# done
-	return @quadgrams;
+	return $self->ngram( 4 );
 
 }
 
@@ -222,29 +200,96 @@ sub quadgram_count {
 }
 
 
+sub ngram {
+
+	# get input
+	my ( $self, $n ) = @_;
+
+	# sanity check
+	if ( ! $n ) { die "This method -- ngram -- requires an integer as an argument." }
+	if ( $n =~ /\D/ ) { die "This method -- ngram -- requires an integer as an argument." }
+	
+	# initialize
+	no warnings;
+	my @words  = $self->words;
+	my @ngrams = ();
+	
+	# process each word
+	for ( my $i = 0; $i < $#words; $i++ ) {
+	
+		# repeat n number of times
+		my $tokens = '';
+		for ( my $j = $i; $j < $i + $n; $j++ ) { $tokens .= $words[ $j ] . ' ' }
+		
+		# remove the trailing space
+		chop $tokens;
+		
+		# build the ngram
+		$ngrams[ $i ] = $tokens;
+		
+	}
+	
+	# done
+	return @ngrams;
+
+}
+
+
+sub ngram_count {
+
+	# get input
+	my ( $self, $ngrams ) = @_;
+
+	# sanity check
+	if ( ref( $ngrams ) ne 'ARRAY' ) { die "This method -- ngram_count -- requires you pass it a reference to an array." }
+	
+	# initialize
+	no warnings;
+	my @words       = $self->words;
+	my %ngram_count = ();
+	
+	# do the work
+	for ( my $i = 0; $i < $#words; $i++ ) { $ngram_count{ $$ngrams[ $i ] }++ }
+	
+	# done
+	return \%ngram_count;
+
+}
 
 
 =head1 NAME
 
-Lingua::EN::Bigram - Calculate two-, three-, and four-word phrases based on frequency and/or T-Score
+Lingua::EN::Bigram - Extract n-grams from a text and list them according to frequency and/or T-Score
 
 
 =head1 SYNOPSIS
 
+  # initalize
   use Lingua::EN::Bigram;
-  $ngram = Lingua::EN::Bigram->new;
-  $ngram->text( 'All men by nature desire to know. An indication of this...' );
-  $tscore = $ngram->tscore;
+  $ngrams = Lingua::EN::Bigram->new;
+  $ngrams->text( 'All men by nature desire to know. An indication of this...' );
+
+  # calculate t-score for bigrams; t-score is only available for bigrams
+  $tscore = $ngrams->tscore;
   foreach ( sort { $$tscore{ $b } <=> $$tscore{ $a } } keys %$tscore ) {
 
-	  print "$$tscore{ $_ }\t" . "$_\n";
+    print "$$tscore{ $_ }\t" . "$_\n";
+
+  }
+
+  # list trigrams according to frequency
+  @trigrams = $ngrams->ngram( 3 );
+  $count = $ngrams->ngram_count( \@trigrams );
+  foreach my $trigram ( sort { $$count{ $b } <=> $$count{ $a } } keys %$count ) {
+
+    print $$count{ $trigram }, "\t$trigram\n";
 
   }
 
 
 =head1 DESCRIPTION
 
-This module is designed to: 1) pull out all of the two-, three-, and four-word phrases in a given text, and 2) list these phrases according to their frequency. Using this module is it possible to create lists of the most common phrases in a text as well as order them by their probable occurance, thus implying significance. This process is useful for the purposes of textual analysis and "distant reading".
+This module is designed to: 1) pull out all of the ngrams (multi-word phrases) in a given text, and 2) list these phrases according to their frequency. Using this module is it possible to create lists of the most common phrases in a text as well as order them by their statistical occurance, thus implying significance. This process is useful for the purposes of textual analysis and "distant reading".
 
 
 =head1 METHODS
@@ -255,7 +300,7 @@ This module is designed to: 1) pull out all of the two-, three-, and four-word p
 Create a new, empty Lingua::EN::Bigram object:
 
   # initalize
-  $ngram = Lingua::EN::Bigram->new;
+  $ngrams = Lingua::EN::Bigram->new;
 
 
 =head2 text
@@ -263,10 +308,10 @@ Create a new, empty Lingua::EN::Bigram object:
 Set or get the text to be analyzed:
 
   # fill Lingua::EN::Bigram object with content 
-  $ngram->text( 'All good things must come to an end...' );
+  $ngrams->text( 'All good things must come to an end...' );
 
   # get the Lingua::EN::Bigram object's content 
-  $text = $ngram->text;
+  $text = $ngrams->text;
 
 
 =head2 words
@@ -274,7 +319,7 @@ Set or get the text to be analyzed:
 Return a list of all the tokens in a text. Each token will be a word or puncutation mark:
 
   # get words
-  @words = $ngram->words;
+  @words = $ngrams->words;
 
 
 =head2 word_count
@@ -282,7 +327,7 @@ Return a list of all the tokens in a text. Each token will be a word or puncutat
 Return a reference to a hash whose keys are a token and whose values are the number of times the token occurs in the text:
 
   # get word count
-  $word_count = $ngram->word_count;
+  $word_count = $ngrams->word_count;
 
   # list the words according to frequency
   foreach ( sort { $$word_count{ $b } <=> $$word_count{ $a } } keys %$word_count ) {
@@ -297,7 +342,9 @@ Return a reference to a hash whose keys are a token and whose values are the num
 Return a list of all bigrams in the text. Each item will be a pair of tokens and the tokens may consist of words or puncutation marks:
 
   # get bigrams
-  @bigrams = $ngram->bigrams;
+  @bigrams = $ngrams->bigrams;
+
+This is a convienience method for the ngram method, described below. It is identical to $ngrams->ngram( 2 ). In fact, that is exactly what is called within the module itself.
 
 
 =head2 bigram_count
@@ -305,12 +352,12 @@ Return a list of all bigrams in the text. Each item will be a pair of tokens and
 Return a reference to a hash whose keys are a bigram and whose values are the frequency of the bigram in the text:
 
   # get bigram count
-  $bigram_count = $ngram->bigram_count;
+  $count = $ngrams->bigram_count;
 
   # list the bigrams according to frequency
-  foreach ( sort { $$bigram_count{ $b } <=> $$bigram_count{ $a } } keys %$bigram_count ) {
+  foreach ( sort { $$count{ $b } <=> $$count{ $a } } keys %$count ) {
 
-    print $$bigram_count{ $_ }, "\t$_\n";
+    print $$count{ $_ }, "\t$_\n";
 
   }
 
@@ -320,7 +367,7 @@ Return a reference to a hash whose keys are a bigram and whose values are the fr
 Return a reference to a hash whose keys are a bigram and whose values are a T-Score -- a probabalistic calculation determining the significance of the bigram occuring in the text:
 
   # get t-score
-  $tscore = $ngram->tscore;
+  $tscore = $ngrams->tscore;
 
   # list bigrams according to t-score
   foreach ( sort { $$tscore{ $b } <=> $$tscore{ $a } } keys %$tscore ) {
@@ -329,13 +376,17 @@ Return a reference to a hash whose keys are a bigram and whose values are a T-Sc
 
   }
 
+T-Score can only be computed against bigrams.
+
 
 =head2 trigrams
 
 Return a list of all trigrams (three-word phrases) in the text. Each item will include three tokens and the tokens may consist of words or puncutation marks:
 
   # get trigrams
-  @trigrams = $ngram->trigrams;
+  @trigrams = $ngrams->trigrams;
+
+This is a convienience method for the ngram method, described below. It is identical to $ngrams->ngram( 3 ). In fact, that is exactly what is called within the module itself.
 
 
 =head2 trigram_count
@@ -343,12 +394,12 @@ Return a list of all trigrams (three-word phrases) in the text. Each item will i
 Return a reference to a hash whose keys are a trigram and whose values are the frequency of the trigram in the text:
 
   # get trigram count
-  $trigram_count = $ngram->trigram_count;
+  $count = $ngrams->trigram_count;
 
   # list the trigrams according to frequency
-  foreach ( sort { $$trigram_count{ $b } <=> $$trigram_count{ $a } } keys %$trigram_count ) {
+  foreach ( sort { $$count{ $b } <=> $$count{ $a } } keys %$count ) {
 
-    print $$trigram_count{ $_ }, "\t$_\n";
+    print $$count{ $_ }, "\t$_\n";
 
   }
 
@@ -358,7 +409,9 @@ Return a reference to a hash whose keys are a trigram and whose values are the f
 Return a list of all quadgrams (four-word phrases) in the text. Each item will include four tokens and the tokens may consist of words or puncutation marks:
 
   # get quadgrams
-  @quadgrams = $ngram->quadgrams;
+  @quadgrams = $ngrams->quadgrams;
+
+This is a convienience method for the ngram method, described below. It is identical to $ngrams->ngram( 4 ). In fact, that is exactly what is called within the module itself.
 
 
 =head2 quadgram_count
@@ -366,13 +419,36 @@ Return a list of all quadgrams (four-word phrases) in the text. Each item will i
 Return a reference to a hash whose keys are a quadgram and whose values are the frequency of the quadgram in the text:
 
   # get quadgram count
-  $quadgram_count = $ngram->quadgram_count;
+  $count = $ngrams->quadgram_count;
 
   # list the trigrams according to frequency
-  foreach ( sort { $$quadgram_count{ $b } <=> $$quadgram_count{ $a } } keys %$quadgram_count ) {
+  foreach ( sort { $$count{ $b } <=> $$count{ $a } } keys %$count ) {
 
-    print $$quadgram_count{ $_ }, "\t$_\n";
+    print $$count{ $_ }, "\t$_\n";
 
+  }
+
+
+=head2 ngram
+
+Return a list of ngrams where the length of each ngram is denoted by the method's parameter:
+
+  # create a list of trigrams
+  @trigrams = $ngrams->ngram( 3 );
+  
+This method requires a single parameter and that parameter must be an integer.
+
+
+=head2 ngram_count
+
+Given a reference to an array, return a reference to a hash whose keys are an ngram and whose values are the frequency of the ngram in the text:
+
+  # count ngram frequency
+  $counts = $ngrams->ngram_count( \@trigrams );
+  foreach ( sort { $$counts{ $b } <=> $$counts{ $a } } keys %$counts ) {
+
+    print $$counts{ $_ }, "\t$_\n";
+	
   }
 
 
@@ -382,7 +458,7 @@ Given the increasing availability of full text materials, this module is intende
 
 Consider using T-Score-weighted bigrams as classification terms to supplement the "aboutness" of texts. Concatonate many texts together and look for common phrases written by the author. Compare these commonly used phrases to the commonly used phrases of other authors.
 
-Each bigram, trigram, or quadgram includes punctuation. This is intentional. Developers may need want to remove bigrams, trigrams, or quadgrams containing such values from the output. Similarly, no effort has been made to remove commonly used words -- stop words -- from the methods. Consider the use of Lingua::StopWords, Lingua::EN::StopWords, or the creation of your own stop word list to make output more meaningful. The distribution came with a script (bin/n-grams.pl) demonstrating how to remove puncutation and stop words from the displayed output.
+Each bigram, trigram, quadgram, or ngram includes punctuation. This is intentional. Developers may need want to remove bigrams, trigrams, quadgrams, or ngrams containing such values from the output. Similarly, no effort has been made to remove commonly used words -- stop words -- from the methods. Consider the use of Lingua::StopWords, Lingua::EN::StopWords, or the creation of your own stop word list to make output more meaningful. The distribution came with a script (bin/ngrams.pl) demonstrating how to remove puncutation and stop words from the displayed output.
 
 Finally, this is not the only module supporting bigram extraction. See also Text::NSP which supports n-gram extraction.
 
@@ -399,8 +475,6 @@ There are probably a number of ways the module can be improved:
 
 * the addition of alternative T-Score calculations would be nice
 
-* it would be nice to support n-grams
-
 * make sure the module works with character sets beyond ASCII
 
 =back
@@ -410,9 +484,11 @@ There are probably a number of ways the module can be improved:
 
 =over
 
-* August 22, 2010 - added trigrams and quadgrams; tweaked documentation; removed bigrams.pl from  the distribution and substituted it wih n-grams.pl
+* August 23, 2010 (version 0.03) - added ngram and ngram_counts methods
 
-* June 19, 2009 - initial release
+* August 22, 2010 (version 0.02) - added trigrams and quadgrams; tweaked documentation; removed bigrams.pl from  the distribution and substituted it wih n-grams.pl
+
+* June 19, 2009 (version 0.01) - initial release
 
 =back
 

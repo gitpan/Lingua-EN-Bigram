@@ -1,7 +1,7 @@
 --- #YAML:1.0
 name:               Lingua-EN-Bigram
-version:            0.02
-abstract:           Calculate two-, three-, and four-word phrases based on frequency and/or T-Score
+version:            0.03
+abstract:           Calculate n-word phrases (bigrams, trigrams, etc.) based on frequency and/or T-Score
 author:
     - Eric Lease Morgan
 license:            unknown

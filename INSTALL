@@ -10,12 +10,12 @@ requires no dependencies:
   $ make test
   $ make install
 
-Once installed (or even before) you should be able to see how it works
-by:
+Once installed (or maybe even before) you should be able to see how it
+works by:
 
   $ cd bin
   $ ./n-grams.pl ../etc/walden.txt
 
 -- 
 Eric Lease Morgan <eric_morgan@infomotions.com>
-August 22, 2010
+August 23, 2010

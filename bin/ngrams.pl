@@ -1,12 +1,13 @@
 #!/usr/bin/perl
 
 # n-grams.pl - list top 10 bi-grams from a text ordered by tscore, and
-#              list top 10 tri-grams and 4-grams ordered by number of occurances
+#              list top 10 tri-grams, 4-grams, and 10-grams ordered by number of occurances
 
 # Eric Lease Morgan <eric_morgan@infomotions.com>
 # June   18, 2009 - first implementation
 # June   19, 2009 - tweaked
 # August 22, 2009 - added tri-grams and 4-grams
+# August 23, 2009 - added n-grams; wow!
 
 
 # require
@@ -66,15 +67,14 @@ foreach my $bigram ( sort { $$tscore{ $b } <=> $$tscore{ $a } } keys %$tscore ) 
 }
 print "\n";
 
-# get tri-gram counts
-my $trigram_count = $ngrams->trigram_count;
 
-# process the first top 10 tri-grams
+# get and process the first top 10 tri-gram counts
+my $trigram_count = $ngrams->trigram_count;
 $index = 0;
 print "Tri-grams (count, tri-gram)\n";
 foreach my $trigram ( sort { $$trigram_count{ $b } <=> $$trigram_count{ $a } } keys %$trigram_count ) {
 
-	# get the tokens of the bigram
+	# get the tokens of the ngram
 	my ( $first_token, $second_token, $third_token ) = split / /, $trigram;
 	
 	# skip punctuation
@@ -97,38 +97,51 @@ foreach my $trigram ( sort { $$trigram_count{ $b } <=> $$trigram_count{ $a } } k
 }
 print "\n";
 
-# get quad-gram counts
-my $quadgram_count = $ngrams->quadgram_count;
 
-# process the first top 10 tri-grams
+# get and process the first top 10 10-gram counts
+my @ten_grams = $ngrams->ngram( 10 );
+my $ten_grams_counts = $ngrams->ngram_count( \@ten_grams );
 $index = 0;
-print "Quad-grams (count, quad-gram)\n";
-foreach my $quadgram ( sort { $$quadgram_count{ $b } <=> $$quadgram_count{ $a } } keys %$quadgram_count ) {
+print "10_grams (count, 10-gram)\n";
+foreach my $ten_gram ( sort { $$ten_grams_counts{ $b } <=> $$ten_grams_counts{ $a } } keys %$ten_grams_counts ) {
 
-	# get the tokens of the bigram
-	my ( $first_token, $second_token, $third_token, $fourth_token ) = split / /, $quadgram;
+	# get the tokens of the ngram
+	my ( $first_token, $second_token, $third_token, $fourth_token, $fifth_token, $sixth_token, $seventh_token, $eight_token, $ninth_token, $tenth_token ) = split / /, $ten_gram;
 	
 	# skip punctuation
-	next if ( $first_token  =~ /[,.?!:;()\-]/ );
-	next if ( $second_token =~ /[,.?!:;()\-]/ );
-	next if ( $third_token  =~ /[,.?!:;()\-]/ );
-	next if ( $fourth_token =~ /[,.?!:;()\-]/ );
+	next if ( $first_token   =~ /[,.?!:;()\-]/ );
+	next if ( $second_token  =~ /[,.?!:;()\-]/ );
+	next if ( $third_token   =~ /[,.?!:;()\-]/ );
+	next if ( $fourth_token  =~ /[,.?!:;()\-]/ );
+	next if ( $fifth_token   =~ /[,.?!:;()\-]/ );
+	next if ( $sixth_token   =~ /[,.?!:;()\-]/ );
+	next if ( $seventh_token =~ /[,.?!:;()\-]/ );
+	next if ( $eight_token   =~ /[,.?!:;()\-]/ );
+	next if ( $ninth_token   =~ /[,.?!:;()\-]/ );
+	next if ( $tenth_token   =~ /[,.?!:;()\-]/ );
 
 	# skip stopwords; results are often more interesting if these are commented out
 	#next if ( $$stopwords{ $first_token } );
 	#next if ( $$stopwords{ $second_token } );
 	#next if ( $$stopwords{ $third_token } );
 	#next if ( $$stopwords{ $fourth_token } );
+	#next if ( $$stopwords{ $fifth_token } );
+	#next if ( $$stopwords{ $sixth_token } );
+	#next if ( $$stopwords{ $seventh_token } );
+	#next if ( $$stopwords{ $eight_token } );
+	#next if ( $$stopwords{ $ninth_token } );
+	#next if ( $$stopwords{ $tenth_token } );
 	
 	# increment
 	$index++;
 	last if ( $index > 10 );
 	
 	# echo
-	print $$quadgram_count{ $quadgram }, "\t$quadgram\n";
+	print $$ten_grams_counts{ $ten_gram }, "\t$ten_gram\n";
 	
 }
 print "\n";
+
 
 # done
 exit;
